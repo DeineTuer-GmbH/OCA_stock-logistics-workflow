@@ -5,7 +5,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import ValidationError
 from odoo.tests.common import TransactionCase
 
 
@@ -93,7 +93,7 @@ class TestStockNoNegative(TransactionCase):
                 "state": "draft",
                 "location_id": self.location_id.id,
                 "location_dest_id": self.location_dest_id.id,
-                "quantity_done": 100.0,
+                "quantity": 100.0,
             }
         )
 
@@ -121,6 +121,17 @@ class TestStockNoNegative(TransactionCase):
                 "state": "draft",
                 "location_id": self.location_id.id,
                 "location_dest_id": self.location_dest_id.id,
+            }
+        )
+        self.stock_move_line_with_lot = self.env["stock.move.line"].create(
+            {
+                "product_id": self.product_with_lot.id,
+                "quantity": 100.0,
+                "picking_id": self.stock_picking_with_lot.id,
+                "move_id": self.stock_move_with_lot.id,
+                "location_id": self.location_id.id,
+                "location_dest_id": self.location_dest_id.id,
+                "lot_id": self.lot1.id,
             }
         )
 
@@ -166,11 +177,7 @@ class TestStockNoNegative(TransactionCase):
         the allow_negative_stock is set active in the product with lot"""
         self.product_with_lot.allow_negative_stock = True
         self.stock_picking_with_lot.action_confirm()
-        self.stock_picking_with_lot.move_ids.quantity_done = 100
-        with self.assertRaises(UserError):
-            self.stock_picking_with_lot._action_done()
-        self.stock_picking_with_lot.move_ids.move_line_ids[0].lot_id = self.lot1.id
-        self.stock_picking_with_lot._action_done()
+        self.stock_picking_with_lot.button_validate()
         quant = self.env["stock.quant"].search(
             [
                 ("product_id", "=", self.product_with_lot.id),

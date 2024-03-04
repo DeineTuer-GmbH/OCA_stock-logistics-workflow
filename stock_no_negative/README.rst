@@ -154,6 +154,8 @@ Contributors
 
 -  Vishnu Vanneri <vvanneri@ioppolo.com.au>
 
+-  Foram Darji <fd@oerp.ca>
+
 Maintainers
 -----------
 
